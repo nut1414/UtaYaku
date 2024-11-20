@@ -9,6 +9,8 @@ export default defineNuxtConfig({
 
 	modules: ["@nuxtjs/tailwindcss", "@nuxt/fonts", "@nuxt/icon", "@nuxt/image"],
 
+	css: ["./assets/css/tailwind.css"],
+
 	fonts: {
 		families: [
 			{name: "Roboto Mono", provider: "fontsource"}
