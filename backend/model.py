@@ -49,9 +49,15 @@ class Qwen32BInstruct(ls.LitAPI):
             **context["model_args"]
         }
         
-        output = self.model.generate(**model_kwargs)
-        decoded_output = self.tokenizer.decode(output[0], skip_special_tokens=True)
-        yield decoded_output
+        gen_tokens = self.model.generate(**model_kwargs)
+        
+        input_length = inputs.shape[1]  # Length of the input prompt
+        generated_tokens = gen_tokens[:, input_length:]  # Only the new generated tokens
+        
+        response = self.tokenizer.batch_decode(generated_tokens, skip_special_tokens=True)[0]
+        
+        yield response
+
 
     def encode_response(self, outputs, context:dict):
         for output in outputs:
