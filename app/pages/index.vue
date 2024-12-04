@@ -10,26 +10,32 @@
 					{{ lyric_line }}	
 				</p>
 			</div>
-			<h1>{{ embedUrl }}</h1>
 			<div class="w-full">
-				<div v-html="embedCode"></div>
+				<div id="embed-iframe"></div>
 			</div>
+			<h1>Current playback: {{ playbackTime }}</h1>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
 const lyrics = ref([])
-const embedCode = ref("")
+const playbackTime = ref(0)
 
 const song_name = "Insomnia"
 const artist_name = "Eve"
 
+
 const fetchMusicData = async () => {
-	// const res = await fetch("/api/musicapi")
-	const embeddingResponse = await fetch("/api/musicapi")
+	const embeddingResponse = await fetch("/api/musicapi", {
+		method: "POST",
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ song_name, artist_name })
+	})
 	const embeddingResponseData = await embeddingResponse.json()
-	embedCode.value = embeddingResponseData.embedCode
+	const trackUrl = embeddingResponseData.url
 
 	const lyricsResponse = await fetch(`https://lrclib.net/api/search?track_name=${song_name}&artist_name=${artist_name}`)
 
@@ -46,7 +52,55 @@ const fetchMusicData = async () => {
 	const most_related = lyricsData[0]
 	lyrics.value = most_related.plainLyrics.split("\n")
 
+	try {
+		initializeSpotifyEmbed(trackUrl)
+	} catch (error) {
+		if (error instanceof Error) {
+			console.error(error.message)
+		} else{
+			console.error("Unknown error: ", error)
+		}
+	}
+
 	console.log(most_related.syncedLyrics)
+}
+
+interface IFrameAPIType {
+	createController: (
+		element: HTMLElement,
+		options: { uri: string; width: string; height: number },
+		callback: (EmbedController: EmbedControllerType) => void
+	) => void
+}
+
+interface EmbedControllerType {
+    addListener: (event: string, callback: (state: PlaybackState) => void) => void;
+}
+
+interface PlaybackState {
+    data: { position: number };
+}
+
+const initializeSpotifyEmbed = (trackUrl: string) => {
+	window.onSpotifyIframeApiReady = (IframeAPI: IFrameAPIType) => {
+		const element = document.getElementById("embed-iframe")
+		if (!element) {
+			console.error("Embed iframe element not found.")
+			return
+		}
+		const options = {
+			uri: trackUrl,
+			width: "100%",
+			height: 152
+		}
+		const callback = (EmbedController: EmbedControllerType) => {
+			EmbedController.addListener("playback_update", (state) => {
+				console.log(state)
+				playbackTime.value = state.data.position
+			})
+		}
+		IframeAPI.createController(element, options, callback)
+	}
 }
 
 onMounted(() => {
