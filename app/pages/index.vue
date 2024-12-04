@@ -5,26 +5,48 @@
 				<h1 class="text-5xl text-yellow-100">{{song_name}}</h1>
 				<h1 class="text-xl text-orange-200">({{artist_name}})</h1>
 			</div>
-			<div class="flex flex-col text-[#F5F5F5] text-2xl overflow-y-auto gap-3 w-full">
-				<p v-for="(lyric_line, i) in lyrics" :key="i">
-					{{ lyric_line }}	
+			<div class="flex flex-col text-[#F5F5F5bb] text-2xl overflow-y-auto gap-3 w-full">
+				<p
+					v-for="(lyric_line, i) in lyrics"
+					:class="{ 'text-yellow-100': isCurLyric(lyricsIndices[i]) }"
+					:id="lyricsIndices[i]"
+					:key="i"
+				>
+					{{ lyric_line }}
 				</p>
 			</div>
 			<div class="w-full">
 				<div id="embed-iframe"></div>
 			</div>
-			<h1>Current playback: {{ playbackTime }}</h1>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
 const lyrics = ref([])
+const lyricsIndices = ref([])
+const timestamps = ref([]) // in pairs format [start, end]
 const playbackTime = ref(0)
 
 const song_name = "Insomnia"
 const artist_name = "Eve"
 
+function timestampToMS(timestamp: string){
+	const [minutes, seconds, milliseconds] = timestamp.slice(1, -1).split(/[:.]/).map(Number)
+	const ans = (minutes! * 60 * 1000) + (seconds! * 1000) + milliseconds! * 10
+	return ans - 60 // let the lyrics display a little earlier
+}
+
+const filterTimestamps = (rawSynced: Array<string>) => {
+	const matches = rawSynced.map(line => line.match(/\[\d{2}:\d{2}\.\d{2}\]/)![0]).map(timestamp => timestampToMS(timestamp))
+	const l = matches.length
+	let timeStampPairs = new Array<Array<number>>
+	for (let i = 0; i < l - 1; i++){
+		timeStampPairs.push([matches[i]!, matches[i + 1]!])
+	}
+	timeStampPairs.push([matches[l - 1]!, matches[l - 1]! + 5])
+	return timeStampPairs
+}
 
 const fetchMusicData = async () => {
 	const embeddingResponse = await fetch("/api/musicapi", {
@@ -41,7 +63,7 @@ const fetchMusicData = async () => {
 
 	if (!lyricsResponse.ok) {
 		lyrics.value = [`No song with name ${song_name} and artist ${artist_name} could be found.`]
-		throw new Error(`No song with name ${song_name} and artist ${artist_name} was found.`)
+		throw new Error(`No song with name ${song_name} and artist ${artist_name} could be found.`)
 	}
 
 	const lyricsData = await lyricsResponse.json()
@@ -50,7 +72,23 @@ const fetchMusicData = async () => {
 	}
 
 	const most_related = lyricsData[0]
-	lyrics.value = most_related.plainLyrics.split("\n")
+	const rawLyrics = most_related.plainLyrics.split("\n")
+	const rawSynced = most_related.syncedLyrics.split("\n").slice(0, -1)
+	const l = rawLyrics.length
+	let indices = new Array<number>
+	let j = 0
+	for (let i = 0; i < l; i++){
+		if (rawLyrics[i] !== ""){
+			indices.push(j)
+			j++
+		} else {
+			indices.push(-1)
+		}
+	}
+
+	lyrics.value = rawLyrics
+	lyricsIndices.value = indices
+	timestamps.value = filterTimestamps(rawSynced)
 
 	try {
 		initializeSpotifyEmbed(trackUrl)
@@ -61,8 +99,6 @@ const fetchMusicData = async () => {
 			console.error("Unknown error: ", error)
 		}
 	}
-
-	console.log(most_related.syncedLyrics)
 }
 
 interface IFrameAPIType {
@@ -95,7 +131,6 @@ const initializeSpotifyEmbed = (trackUrl: string) => {
 		}
 		const callback = (EmbedController: EmbedControllerType) => {
 			EmbedController.addListener("playback_update", (state) => {
-				console.log(state)
 				playbackTime.value = state.data.position
 			})
 		}
@@ -103,9 +138,17 @@ const initializeSpotifyEmbed = (trackUrl: string) => {
 	}
 }
 
+const isCurLyric = (i: number) => {
+	if (i !== -1 && playbackTime.value >= timestamps.value[i][0] && playbackTime.value <= timestamps.value[i][1]){
+		console.log("highlighted")
+		return true
+	} else {
+		return false
+	}
+}
+
 onMounted(() => {
 	fetchMusicData()
 })
-
 </script>
 
