@@ -28,6 +28,8 @@ const lyricsIndices = ref([])
 const timestamps = ref([]) // in pairs format [start, end]
 const playbackTime = ref(0)
 
+const { getBreakDown, history } = useBreakDown()
+
 const song_name = "Insomnia"
 const artist_name = "Eve"
 
@@ -151,8 +153,17 @@ const isCurLyric = (i: number) => {
 	}
 }
 
+const test = async (message: string) => {
+	const result = await getBreakDown(message)
+	let content = await result.content
+	content = content.replace(/\n\s+/g, "")
+	console.log(content)
+	console.log(JSON.parse(content))
+}
+
 onMounted(() => {
 	fetchMusicData()
+	test("今日天気はいいですか?")
 })
 </script>
 
