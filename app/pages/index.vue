@@ -8,7 +8,7 @@
 			<div class="flex flex-col text-[#F5F5F5bb] text-2xl overflow-y-auto gap-3 w-full">
 				<p
 					v-for="(lyric_line, i) in lyrics"
-					:class="{ 'text-yellow-100': isCurLyric(lyricsIndices[i]) }"
+					:class="{ 'text-yellow-100 font-bold': isCurLyric(lyricsIndices[i]) }"
 					:id="lyricsIndices[i]"
 					:key="i"
 				>
@@ -34,7 +34,7 @@ const artist_name = "Eve"
 function timestampToMS(timestamp: string){
 	const [minutes, seconds, milliseconds] = timestamp.slice(1, -1).split(/[:.]/).map(Number)
 	const ans = (minutes! * 60 * 1000) + (seconds! * 1000) + milliseconds! * 10
-	return ans - 60 // let the lyrics display a little earlier
+	return ans - 500 // let the lyrics display a little earlier
 }
 
 const filterTimestamps = (rawSynced: Array<string>) => {
@@ -140,7 +140,11 @@ const initializeSpotifyEmbed = (trackUrl: string) => {
 
 const isCurLyric = (i: number) => {
 	if (i !== -1 && playbackTime.value >= timestamps.value[i][0] && playbackTime.value <= timestamps.value[i][1]){
-		console.log("highlighted")
+		document.getElementById(`${i}`)!.scrollIntoView({
+			behavior: 'smooth',
+			block: 'center',
+			inline: 'center'
+		})
 		return true
 	} else {
 		return false
