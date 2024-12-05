@@ -12,3 +12,5 @@ Steps to install.
 1. Clone the repository
 2. run `pnpm install`
 3. create a .env file in the root directory with `CLIENT_ID=<your client id from app.musicapi.com>`
+4. pnpm run dev
+5. access the website on http://localhost:3000/
