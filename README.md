@@ -6,3 +6,9 @@ Learn your language with music. Just like Spotify and other music services, read
 This is a preview of the current state, I didn't have time to add the LLM descriptions for now.
 
 https://github.com/user-attachments/assets/b1dfa497-0952-4689-b265-81862c01ba08
+
+
+Steps to install.
+1. Clone the repository
+2. run `pnpm install`
+3. create a .env file in the root directory with `CLIENT_ID=<your client id from app.musicapi.com>`
