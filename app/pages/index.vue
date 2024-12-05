@@ -1,16 +1,26 @@
 <template>
 	<div class="flex items-center flex-col justify-center h-full w-full gap-5">
-		<div class="max-w-3xl flex items-center flex-col justify-center h-full w-full gap-5 py-[8rem]">
+		<div class="max-w-4xl flex items-center flex-col justify-center h-full w-full gap-5 py-[4rem]">
 			<div class="flex gap-3 items-baseline border-white border-b">
 				<h1 class="text-5xl text-yellow-100">{{song_name}}</h1>
 				<h1 class="text-xl text-orange-200">({{artist_name}})</h1>
 			</div>
-			<div class="flex flex-col text-[#F5F5F5bb] text-2xl overflow-y-auto gap-3 w-full">
+			<div class="w-full border-[#4d4e51] border-2 p-4 rounded-xl">
+				<h1 v-for="(key, i) in phrases" :key="i">
+					{{ key }}: {{ breakdown[key] }}
+				</h1>
+				<h1>
+					<span class="text-orange-200">Translation</span>: {{ breakdown["translation"] }}
+				</h1>
+			</div>
+			<div class="flex flex-col text-[#F5F5F5bb] text-2xl overflow-y-auto gap-3 w-full p-4">
 				<p
 					v-for="(lyric_line, i) in lyrics"
+					class="cursor-pointer"
 					:class="{ 'text-yellow-100 font-bold': isCurLyric(lyricsIndices[i]) }"
 					:id="lyricsIndices[i]"
 					:key="i"
+					@click="handleLineClick(lyricsIndices[i])"
 				>
 					{{ lyric_line }}
 				</p>
@@ -27,6 +37,9 @@ const lyrics = ref([])
 const lyricsIndices = ref([])
 const timestamps = ref([]) // in pairs format [start, end]
 const playbackTime = ref(0)
+const breakdown = ref({})
+const phrases = ref([])
+const allBreakdowns = ref([])
 
 const { getBreakDown, history } = useBreakDown()
 
@@ -36,7 +49,7 @@ const artist_name = "Eve"
 function timestampToMS(timestamp: string){
 	const [minutes, seconds, milliseconds] = timestamp.slice(1, -1).split(/[:.]/).map(Number)
 	const ans = (minutes! * 60 * 1000) + (seconds! * 1000) + milliseconds! * 10
-	return ans - 500 // let the lyrics display a little earlier
+	return ans - 500
 }
 
 const filterTimestamps = (rawSynced: Array<string>) => {
@@ -48,6 +61,14 @@ const filterTimestamps = (rawSynced: Array<string>) => {
 	}
 	timeStampPairs.push([matches[l - 1]!, matches[l - 1]! + 5])
 	return timeStampPairs
+}
+
+const decompose = async (message: string) => {
+	const result = await getBreakDown(message)
+	let content = await result.content
+	content = content.replace(/\n\s+/g, "")
+	content = JSON.parse(content)
+	allBreakdowns.value.push = content
 }
 
 const fetchMusicData = async () => {
@@ -81,6 +102,7 @@ const fetchMusicData = async () => {
 	let j = 0
 	for (let i = 0; i < l; i++){
 		if (rawLyrics[i] !== ""){
+			// decompose(rawLyrics[i])
 			indices.push(j)
 			j++
 		} else {
@@ -119,6 +141,7 @@ interface PlaybackState {
     data: { position: number };
 }
 
+let embedController: EmbedControllerType | null = null
 const initializeSpotifyEmbed = (trackUrl: string) => {
 	window.onSpotifyIframeApiReady = (IframeAPI: IFrameAPIType) => {
 		const element = document.getElementById("embed-iframe")
@@ -132,6 +155,7 @@ const initializeSpotifyEmbed = (trackUrl: string) => {
 			height: 152
 		}
 		const callback = (EmbedController: EmbedControllerType) => {
+			embedController = EmbedController
 			EmbedController.addListener("playback_update", (state) => {
 				playbackTime.value = state.data.position
 			})
@@ -140,8 +164,22 @@ const initializeSpotifyEmbed = (trackUrl: string) => {
 	}
 }
 
+const handleLineClick = (i: number) => {
+	const newTime = timestamps.value[i][0]
+	playbackTime.value = newTime
+	// const content = allBreakdowns[i]	
+	// breakdown.value = content
+	// phrases.value = Object.keys(content).filter(key => key !== "translation")
+
+	if (embedController) {
+		embedController.seek((newTime + 500) / 1000)
+	} else {
+		console.error("Embed Controller not initialized")
+	}
+}
+
 const isCurLyric = (i: number) => {
-	if (i !== -1 && playbackTime.value >= timestamps.value[i][0] && playbackTime.value <= timestamps.value[i][1]){
+	if (i !== -1 && playbackTime.value >= timestamps.value[i][0] && playbackTime.value < timestamps.value[i][1]){
 		document.getElementById(`${i}`)!.scrollIntoView({
 			behavior: 'smooth',
 			block: 'center',
@@ -157,13 +195,14 @@ const test = async (message: string) => {
 	const result = await getBreakDown(message)
 	let content = await result.content
 	content = content.replace(/\n\s+/g, "")
-	console.log(content)
-	console.log(JSON.parse(content))
+	content = JSON.parse(content)
+	breakdown.value = content
+	phrases.value = Object.keys(content).filter(key => key !== "translation")
 }
 
 onMounted(() => {
 	fetchMusicData()
-	test("今日天気はいいですか?")
+	test("起死回生 そう最後だ 盤上の一手")
 })
 </script>
 
