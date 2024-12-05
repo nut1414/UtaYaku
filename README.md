@@ -5,8 +5,7 @@ Learn your language with music. Just like Spotify and other music services, read
 
 This is a preview of the current state, I didn't have time to add the LLM descriptions for now.
 
-https://github.com/user-attachments/assets/b1dfa497-0952-4689-b265-81862c01ba08
-
+<img src="https://github.com/user-attachments/assets/f56adccf-4617-43dd-80f0-e6e1434650e1" alt="2024-12-05-145505_hyprshot" width="300">
 
 Steps to install.
 1. Clone the repository
