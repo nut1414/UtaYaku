@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
 	const completion = await client.chat.completions.create({
 		model: "Qwen/Qwen2.5-14B-Instruct",
 		messages: history,
-		max_tokens: 300,
+		max_tokens: 1024,
 		stream: false
 	})
 

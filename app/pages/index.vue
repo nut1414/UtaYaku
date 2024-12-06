@@ -63,14 +63,6 @@ const filterTimestamps = (rawSynced: Array<string>) => {
 	return timeStampPairs
 }
 
-const decompose = async (message: string) => {
-	const result = await getBreakDown(message)
-	let content = await result.content
-	content = content.replace(/\n\s+/g, "")
-	content = JSON.parse(content)
-	allBreakdowns.value.push = content
-}
-
 const fetchMusicData = async () => {
 	const embeddingResponse = await fetch("/api/musicapi", {
 		method: "POST",
@@ -98,11 +90,11 @@ const fetchMusicData = async () => {
 	const rawLyrics = most_related.plainLyrics.split("\n")
 	const rawSynced = most_related.syncedLyrics.split("\n").slice(0, -1)
 	const l = rawLyrics.length
+
 	let indices = new Array<number>
 	let j = 0
 	for (let i = 0; i < l; i++){
 		if (rawLyrics[i] !== ""){
-			// decompose(rawLyrics[i])
 			indices.push(j)
 			j++
 		} else {
@@ -194,15 +186,15 @@ const isCurLyric = (i: number) => {
 const test = async (message: string) => {
 	const result = await getBreakDown(message)
 	let content = await result.content
-	content = content.replace(/\n\s+/g, "")
-	content = JSON.parse(content)
-	breakdown.value = content
-	phrases.value = Object.keys(content).filter(key => key !== "translation")
+	console.log("Test result", content)
+	// content = content.replace(/\n\s+/g, "")
+	// content = JSON.parse(content)
+	// breakdown.value = content
+	// phrases.value = Object.keys(content).filter(key => key !== "translation")
 }
 
 onMounted(() => {
 	fetchMusicData()
-	test("起死回生 そう最後だ 盤上の一手")
 })
 </script>
 
