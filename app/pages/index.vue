@@ -63,6 +63,23 @@ const filterTimestamps = (rawSynced: Array<string>) => {
 	return timeStampPairs
 }
 
+function fixRepeatedKeys(jsonString: string): string {
+  const regex = /"([^"]+)":/g;
+
+  const keys: { [key: string]: number } = {};
+  let modifiedJsonString = jsonString.replace(regex, (match, key) => {
+    if (keys[key]) {
+      keys[key]++;
+      return `"${key}_${keys[key]}":`;
+    } else {
+      keys[key] = 1;
+      return match;
+    }
+  });
+
+  return modifiedJsonString;
+}
+
 const fetchMusicData = async () => {
 	const embeddingResponse = await fetch("/api/musicapi", {
 		method: "POST",
@@ -89,8 +106,8 @@ const fetchMusicData = async () => {
 	const most_related = lyricsData[0]
 	const rawLyrics = most_related.plainLyrics.split("\n")
 	const rawSynced = most_related.syncedLyrics.split("\n").slice(0, -1)
+	timestamps.value = filterTimestamps(rawSynced)
 	const l = rawLyrics.length
-
 	let indices = new Array<number>
 	let j = 0
 	for (let i = 0; i < l; i++){
@@ -101,10 +118,8 @@ const fetchMusicData = async () => {
 			indices.push(-1)
 		}
 	}
-
 	lyrics.value = rawLyrics
 	lyricsIndices.value = indices
-	timestamps.value = filterTimestamps(rawSynced)
 
 	try {
 		initializeSpotifyEmbed(trackUrl)
@@ -115,6 +130,44 @@ const fetchMusicData = async () => {
 			console.error("Unknown error: ", error)
 		}
 	}
+	
+	const batchSize = 12
+	let buffer = ""
+	let bufferCount = 0
+	indices.forEach(async i => {
+		if (i !== -1){
+			buffer += "\n" + rawLyrics[i]
+			bufferCount++
+			if (bufferCount === batchSize){
+				console.log(buffer)
+				// const result = await getBreakDown(buffer)
+				// let content = await result.content
+				let content = ""
+				content = content.replace(/\n\s+/g, "")
+				// content = fixRepeatedKeys(content)
+				content = JSON.parse(content)
+				
+				for (let j = 0; j < batchSize; j++){
+					allBreakdowns.value.push(content[j])
+				}
+
+				buffer = ""
+				bufferCount = 0
+			}
+		}
+	})
+	if (bufferCount > 0){
+		const result = await getBreakDown(buffer)
+		let content = await result.content
+		content = content.replace(/\n\s+/g, "")
+		content = fixRepeatedKeys(content)
+		content = JSON.parse(content)
+
+		for (let j = 0; j < bufferCount; j++){
+			allBreakdowns.value.push(content[j])
+		}
+	}
+	console.log("all breakdowns: ", allBreakdowns.value)
 }
 
 interface IFrameAPIType {
@@ -159,9 +212,10 @@ const initializeSpotifyEmbed = (trackUrl: string) => {
 const handleLineClick = (i: number) => {
 	const newTime = timestamps.value[i][0]
 	playbackTime.value = newTime
-	// const content = allBreakdowns[i]	
-	// breakdown.value = content
-	// phrases.value = Object.keys(content).filter(key => key !== "translation")
+
+	const content = allBreakdowns[i]
+	breakdown.value = content
+	phrases.value = Object.keys(content).filter(key => key !== "translation")
 
 	if (embedController) {
 		embedController.seek((newTime + 500) / 1000)
@@ -186,15 +240,16 @@ const isCurLyric = (i: number) => {
 const test = async (message: string) => {
 	const result = await getBreakDown(message)
 	let content = await result.content
-	console.log("Test result", content)
-	// content = content.replace(/\n\s+/g, "")
-	// content = JSON.parse(content)
-	// breakdown.value = content
-	// phrases.value = Object.keys(content).filter(key => key !== "translation")
+	content = content.replace(/\n\s+/g, "")
+	content = JSON.parse(content)
+	breakdown.value = content
+	phrases.value = Object.keys(content).filter(key => key !== "translation")
 }
 
 onMounted(() => {
 	fetchMusicData()
+	// test("起死回生 そう最後だ 盤上の一手")
 })
 </script>
+
 

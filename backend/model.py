@@ -34,6 +34,7 @@ class Qwen32BInstruct(ls.LitAPI):
             "top_p": request.top_p or 0.9,
             "max_new_tokens": request.max_tokens or 2048
         }
+        print(f"Processing input")
         input = self.tokenizer.apply_chat_template(
             request.messages,
             add_generation_prompt=True,
