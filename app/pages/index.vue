@@ -135,37 +135,40 @@ const fetchMusicData = async () => {
 	let buffer = ""
 	let bufferCount = 0
 	indices.forEach(async i => {
-		if (i !== -1){
+		if (i !== -1 && rawLyrics[i] !== ""){
 			buffer += "\n" + rawLyrics[i]
 			bufferCount++
 			if (bufferCount === batchSize){
-				console.log(buffer)
-				// const result = await getBreakDown(buffer)
-				// let content = await result.content
-				let content = ""
+				console.log("```json\nsadjfpasdpf\n```".replace(/```json\n|```/g, ""))
+				const result = await getBreakDown(buffer)
+				let content = await result.content
 				content = content.replace(/\n\s+/g, "")
-				// content = fixRepeatedKeys(content)
-				content = JSON.parse(content)
-				
-				for (let j = 0; j < batchSize; j++){
-					allBreakdowns.value.push(content[j])
-				}
-
-				buffer = ""
-				bufferCount = 0
+				console.log(content)
+				// content.replace(/```json\n|```/g, "")
+				// console.log("Non parsed content", content)
+				// content = JSON.parse(content)
+				//
+				// for (let j = 0; j < batchSize; j++){
+				// 	allBreakdowns.value.push(content[j])
+				// }
+				//
+				// buffer = ""
+				// bufferCount = 0
 			}
 		}
+		return
 	})
+	return
 	if (bufferCount > 0){
-		const result = await getBreakDown(buffer)
-		let content = await result.content
-		content = content.replace(/\n\s+/g, "")
-		content = fixRepeatedKeys(content)
-		content = JSON.parse(content)
-
-		for (let j = 0; j < bufferCount; j++){
-			allBreakdowns.value.push(content[j])
-		}
+		// const result = await getBreakDown(buffer)
+		// let content = await result.content
+		// content = content.replace(/\n\s+/g, "")
+		// content.replace(/```json\n|```/g, "")
+		// content = JSON.parse(content)
+		//
+		// for (let j = 0; j < bufferCount; j++){
+		// 	allBreakdowns.value.push(content[j])
+		// }
 	}
 	console.log("all breakdowns: ", allBreakdowns.value)
 }
