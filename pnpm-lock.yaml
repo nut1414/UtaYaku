@@ -23,12 +23,18 @@ importers:
       '@nuxtjs/tailwindcss':
         specifier: ^6.12.2
         version: 6.12.2(magicast@0.3.5)(rollup@4.27.3)
+      install:
+        specifier: ^0.13.0
+        version: 0.13.0
       nuxt:
         specifier: ^3.14.159
         version: 3.14.1592(@parcel/watcher@2.5.0)(@types/node@22.9.1)(ioredis@5.4.1)(magicast@0.3.5)(rollup@4.27.3)(terser@5.36.0)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.1)(terser@5.36.0))
       openai:
         specifier: ^4.73.1
         version: 4.73.1
+      remove-markdown:
+        specifier: ^0.5.5
+        version: 0.5.5
       vue:
         specifier: latest
         version: 3.5.13(typescript@5.6.3)
@@ -2229,6 +2235,10 @@ packages:
     resolution: {integrity: sha512-QQnnxNyfvmHFIsj7gkPcYymR8Jdw/o7mp5ZFihxn6h8Ci6fh3Dx4E1gPjpQEpIuPo9XVNY/ZUwh4BPMjGyL01g==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
+  install@0.13.0:
+    resolution: {integrity: sha512-zDml/jzr2PKU9I8J/xyZBQn8rPCAY//UOYNmR01XwNwyfhEWObo2SWfSl1+0tm1u6PhxLwDnfsT/6jB7OUxqFA==}
+    engines: {node: '>= 0.10'}
+
   ioredis@5.4.1:
     resolution: {integrity: sha512-2YZsvl7jopIa1gaePkeMtd9rAcSjOOjPtpcLlOeusyO+XH2SK5ZcT+UCrElPP+WVIInh2TzeI4XW9ENaSLVVHA==}
     engines: {node: '>=12.22.0'}
@@ -3244,6 +3254,9 @@ packages:
   regexp-tree@0.1.27:
     resolution: {integrity: sha512-iETxpjK6YoRWJG5o6hXLwvjYAoW+FEZn9os0PD/b6AP6xQwsa/Y7lCVgIixBbUPMfhu+i2LtdeAqVTgGlQarfA==}
     hasBin: true
+
+  remove-markdown@0.5.5:
+    resolution: {integrity: sha512-lMR8tOtDqazFT6W2bZidoXwkptMdF3pCxpri0AEokHg0sZlC2GdoLqnoaxsEj1o7/BtXV1MKtT3YviA1t7rW7g==}
 
   replace-in-file@6.3.5:
     resolution: {integrity: sha512-arB9d3ENdKva2fxRnSjwBEXfK1npgyci7ZZuwysgAp7ORjHSyxz6oqIjTEv8R0Ydl4Ll7uOAZXL4vbkhGIizCg==}
@@ -6601,6 +6614,8 @@ snapshots:
 
   ini@4.1.1: {}
 
+  install@0.13.0: {}
+
   ioredis@5.4.1:
     dependencies:
       '@ioredis/commands': 1.2.0
@@ -7805,6 +7820,8 @@ snapshots:
   regenerator-runtime@0.13.11: {}
 
   regexp-tree@0.1.27: {}
+
+  remove-markdown@0.5.5: {}
 
   replace-in-file@6.3.5:
     dependencies:

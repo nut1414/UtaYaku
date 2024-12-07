@@ -33,6 +33,8 @@
 </template>
 
 <script setup lang="ts">
+import removeMd from 'remove-markdown'
+
 const lyrics = ref([])
 const lyricsIndices = ref([])
 const timestamps = ref([]) // in pairs format [start, end]
@@ -41,7 +43,7 @@ const breakdown = ref({})
 const phrases = ref([])
 const allBreakdowns = ref([])
 
-const { getBreakDown, history } = useBreakDown()
+const { getBreakDown } = useBreakDown()
 
 const song_name = "Insomnia"
 const artist_name = "Eve"
@@ -61,23 +63,6 @@ const filterTimestamps = (rawSynced: Array<string>) => {
 	}
 	timeStampPairs.push([matches[l - 1]!, matches[l - 1]! + 5])
 	return timeStampPairs
-}
-
-function fixRepeatedKeys(jsonString: string): string {
-  const regex = /"([^"]+)":/g;
-
-  const keys: { [key: string]: number } = {};
-  let modifiedJsonString = jsonString.replace(regex, (match, key) => {
-    if (keys[key]) {
-      keys[key]++;
-      return `"${key}_${keys[key]}":`;
-    } else {
-      keys[key] = 1;
-      return match;
-    }
-  });
-
-  return modifiedJsonString;
 }
 
 const fetchMusicData = async () => {
@@ -134,41 +119,36 @@ const fetchMusicData = async () => {
 	const batchSize = 12
 	let buffer = ""
 	let bufferCount = 0
-	indices.forEach(async i => {
-		if (i !== -1 && rawLyrics[i] !== ""){
+	for (let i = 0; i < l; i++){
+		console.log(bufferCount)
+		if (rawLyrics[i] !== ""){
 			buffer += "\n" + rawLyrics[i]
 			bufferCount++
 			if (bufferCount === batchSize){
-				console.log("```json\nsadjfpasdpf\n```".replace(/```json\n|```/g, ""))
 				const result = await getBreakDown(buffer)
 				let content = await result.content
-				content = content.replace(/\n\s+/g, "")
+				content = removeMd(content.replace(/\n\s+/g, "")).replace("`", "")
+				content = JSON.parse(content)
 				console.log(content)
-				// content.replace(/```json\n|```/g, "")
-				// console.log("Non parsed content", content)
-				// content = JSON.parse(content)
-				//
-				// for (let j = 0; j < batchSize; j++){
-				// 	allBreakdowns.value.push(content[j])
-				// }
-				//
-				// buffer = ""
-				// bufferCount = 0
+
+				for (let j = 0; j < batchSize; j++){
+					allBreakdowns.value.push(content[j])
+				}
+
+				buffer = ""
+				bufferCount = 0
 			}
 		}
-		return
-	})
-	return
+	}
 	if (bufferCount > 0){
-		// const result = await getBreakDown(buffer)
-		// let content = await result.content
-		// content = content.replace(/\n\s+/g, "")
-		// content.replace(/```json\n|```/g, "")
-		// content = JSON.parse(content)
-		//
-		// for (let j = 0; j < bufferCount; j++){
-		// 	allBreakdowns.value.push(content[j])
-		// }
+		const result = await getBreakDown(buffer)
+		let content = await result.content
+		content = removeMd(content.replace(/\n\s+/g, "")).replace("`", "")
+		content = JSON.parse(content)
+
+		for (let j = 0; j < bufferCount; j++){
+			allBreakdowns.value.push(content[j])
+		}
 	}
 	console.log("all breakdowns: ", allBreakdowns.value)
 }

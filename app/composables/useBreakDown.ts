@@ -5,25 +5,8 @@ interface ChatMessage {
   content: string;
 }
 
-  //   {
-  //     role: "user",
-  //     content: "Break down this Japanese sentence, 昨日遅く帰ってきたから彼女に怒られた, including grammar points and vocabulary points, by outputting to me it in JSON format in this form: { <vocabulary|phrase>: <meaning|usage|grammar|> }"
-  //   },
-		// {
-		// 	role: "assistant",
-		// 	content: `{
-  //                 "昨日": "きのう - yesterday",
-  //                 "遅く": "おそく - late",
-  //                 "帰ってきた": "かえってきた - to return home",
-  //                 "から": "because, since",
-  //                 "彼女": "かのじょ - she/her; note: also can mean 'girlfriend' depending on context",
-  //                 "に": "particle; indicates the indirect object or the target of the action (e.g., to her)",
-  //                 "怒られた": "おこられた - passive form of 怒る; indicates the speaker was scolded or reprimanded"
-		// 							"translation": "I was scolded by my girlfriend because I came home late yesterday."
-  //               }`
-		// },
 export function useBreakDown(){
-	const history: Ref<ChatMessage[]> = ref([
+	const baseHistory = [
     {
       role: "system",
       content: `You are an intelligent and helpful AI language assistant, designed to break down and explain concepts in Japanese. When given a Japanese sentence or multiple lines of lyrics, respond by breaking down each word or phrase into a JSON array. Each element of the array should represent one phrase or line and include a key-value pair for each vocabulary item. Ensure that:
@@ -73,13 +56,16 @@ export function useBreakDown(){
 						}
 				]`
 		},
-  ])
+  ]
 
 	async function getBreakDown(message: string) {
-		history.value.push({
-			role: "user",
-			content: message
-		})
+		const runningHistory = [
+      ...baseHistory,
+      {
+        role: "user",
+        content: message,
+      },
+    ];
 
 		try {
 			const response = await fetch("/api/breakdown", {
@@ -87,14 +73,10 @@ export function useBreakDown(){
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ history: history.value})
+				body: JSON.stringify({ history: runningHistory})
 			})
 
 			const data = await response.json()
-			history.value.push({
-				role: "assistant",
-				content: data
-			})
 			return data
 		} catch (error) {
 			console.error("Breakdown error: ", error)
@@ -103,8 +85,7 @@ export function useBreakDown(){
 	}
 
 	return {
-		getBreakDown,
-		history
+		getBreakDown
 	}
 }
 
