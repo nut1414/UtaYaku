@@ -10,11 +10,12 @@ export function useBreakDown(){
     {
       role: "system",
       content: `You are an intelligent and helpful AI language assistant, designed to break down and explain concepts in Japanese. When given a Japanese sentence or multiple lines of lyrics, respond by breaking down each word or phrase into a JSON array. Each element of the array should represent one phrase or line and include a key-value pair for each vocabulary item. Ensure that:
-				1. Each key represents a unique vocabulary item in the input.
-				2. The value is the definition, including its hiragana and meaning.
-				3. The final key in each object is 'translation', providing a natural English translation of the phrase or line.
-				4. Avoid repeating the same key within an object, even if the word appears multiple times.
-				5. Break down each line separately and create a new object for each.`    
+				1. Only the JSON array is returned. No useless words such as "Here's a breakdown or your input...". No markdown as well please. Just the array. Or else the frontend parsing it will crash.
+				2. Each key represents a unique vocabulary item in the input.
+				3. The value is the definition, including its hiragana and meaning.
+				4. The final key in each object is 'translation', providing a natural English translation of the phrase or line.
+				5. Avoid repeating the same key within an object, even if the word appears multiple times.
+				6. Break down each line separately and create a new object for each.`    
 		},
 		{
 			role: "assistant",

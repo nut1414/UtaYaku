@@ -10,7 +10,7 @@
 					{{ key }}: {{ breakdown[key] }}
 				</h1>
 				<h1>
-					<span class="text-orange-200">Translation</span>: {{ breakdown["translation"] }}
+					<span class="text-orange-200">Translation</span>: {{ translation }}
 				</h1>
 			</div>
 			<div class="flex flex-col text-[#F5F5F5bb] text-2xl overflow-y-auto gap-3 w-full p-4">
@@ -41,6 +41,7 @@ const timestamps = ref([]) // in pairs format [start, end]
 const playbackTime = ref(0)
 const breakdown = ref({})
 const phrases = ref([])
+const translation = ref("")
 const allBreakdowns = ref([])
 
 const { getBreakDown } = useBreakDown()
@@ -116,20 +117,22 @@ const fetchMusicData = async () => {
 		}
 	}
 	
-	const batchSize = 12
+	const batchSize = 22
 	let buffer = ""
 	let bufferCount = 0
 	for (let i = 0; i < l; i++){
-		console.log(bufferCount)
 		if (rawLyrics[i] !== ""){
-			buffer += "\n" + rawLyrics[i]
+			buffer += rawLyrics[i] + "\n"
 			bufferCount++
 			if (bufferCount === batchSize){
+				if (buffer.endsWith("\n")){
+					buffer = buffer.slice(0, -1)
+				}
+				console.log("Fetching break down batch...")
 				const result = await getBreakDown(buffer)
 				let content = await result.content
 				content = removeMd(content.replace(/\n\s+/g, "")).replace("`", "")
 				content = JSON.parse(content)
-				console.log(content)
 
 				for (let j = 0; j < batchSize; j++){
 					allBreakdowns.value.push(content[j])
@@ -137,10 +140,20 @@ const fetchMusicData = async () => {
 
 				buffer = ""
 				bufferCount = 0
+				// console.log("Current allBreakdown length: ", allBreakdowns.length)
 			}
 		}
 	}
+
+	// if (buffer.endsWith("\n")){
+	// 	buffer = buffer.slice(0, -1)
+	// }
+	// console.log("Buffer count after", bufferCount)
+	// console.log(buffer.split("\n"))
 	if (bufferCount > 0){
+		if (buffer.endsWith("\n")){
+			buffer = buffer.slice(0, -1)
+		}
 		const result = await getBreakDown(buffer)
 		let content = await result.content
 		content = removeMd(content.replace(/\n\s+/g, "")).replace("`", "")
@@ -150,6 +163,7 @@ const fetchMusicData = async () => {
 			allBreakdowns.value.push(content[j])
 		}
 	}
+
 	console.log("all breakdowns: ", allBreakdowns.value)
 }
 
@@ -196,9 +210,11 @@ const handleLineClick = (i: number) => {
 	const newTime = timestamps.value[i][0]
 	playbackTime.value = newTime
 
-	const content = allBreakdowns[i]
-	breakdown.value = content
-	phrases.value = Object.keys(content).filter(key => key !== "translation")
+	console.log(`Getting the breakdown of index ${i}`)
+	const cur = allBreakdowns.value[i]
+	breakdown.value = cur
+	phrases.value = Object.keys(cur).filter(key => key !== "translation")
+	translation.value = cur["translation"]
 
 	if (embedController) {
 		embedController.seek((newTime + 500) / 1000)
@@ -214,6 +230,7 @@ const isCurLyric = (i: number) => {
 			block: 'center',
 			inline: 'center'
 		})
+		
 		return true
 	} else {
 		return false
@@ -231,7 +248,6 @@ const test = async (message: string) => {
 
 onMounted(() => {
 	fetchMusicData()
-	// test("起死回生 そう最後だ 盤上の一手")
 })
 </script>
 
