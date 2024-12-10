@@ -1,8 +1,7 @@
 <template>
 	<div class="flex items-center flex-col justify-center h-full w-full gap-5">
 		<div class="max-w-4xl flex items-center flex-col justify-center h-full w-full gap-5 py-[4rem]">
-			<div class="flex gap-3 items-baseline border-white border-b">
-				<h1 class="text-5xl text-yellow-100">{{song_name}}</h1>
+			<div class="flex gap-3 items-baseline border-white border-b"> <h1 class="text-5xl text-yellow-100">{{song_name}}</h1>
 				<h1 class="text-xl text-orange-200">({{artist_name}})</h1>
 			</div>
 			<div class="w-full border-[#4d4e51] border-2 p-4 rounded-xl">
@@ -42,7 +41,7 @@ const playbackTime = ref(0)
 const breakdown = ref({})
 const phrases = ref([])
 const translation = ref("")
-const allBreakdowns = ref([])
+const allBreakdowns = ref([{"abc": "cde", "translation": "abc"}, {"ddd": "ddd", "translation": "ppp"}])
 
 const { getBreakDown } = useBreakDown()
 
@@ -117,54 +116,65 @@ const fetchMusicData = async () => {
 		}
 	}
 	
-	const batchSize = 22
-	let buffer = ""
-	let bufferCount = 0
-	for (let i = 0; i < l; i++){
-		if (rawLyrics[i] !== ""){
-			buffer += rawLyrics[i] + "\n"
-			bufferCount++
-			if (bufferCount === batchSize){
-				if (buffer.endsWith("\n")){
-					buffer = buffer.slice(0, -1)
-				}
-				console.log("Fetching break down batch...")
-				const result = await getBreakDown(buffer)
-				let content = await result.content
-				content = removeMd(content.replace(/\n\s+/g, "")).replace("`", "")
-				content = JSON.parse(content)
+	try {
+		/*
+		const batchSize = 22
+		let buffer = ""
+		let bufferCount = 0
+		for (let i = 0; i < l; i++){
+			if (rawLyrics[i] !== ""){
+				buffer += rawLyrics[i] + "\n"
+				bufferCount++
+				if (bufferCount === batchSize){
+					if (buffer.endsWith("\n")){
+						buffer = buffer.slice(0, -1)
+					}
+					console.log("Fetching break down batch...")
+					const result = await getBreakDown(buffer)
+					let content = await result.content
+					content = removeMd(content.replace(/\n\s+/g, "")).replace("`", "")
+					content = JSON.parse(content)
 
-				for (let j = 0; j < batchSize; j++){
-					allBreakdowns.value.push(content[j])
-				}
+					for (let j = 0; j < batchSize; j++){
+						allBreakdowns.value.push(content[j])
+					}
 
-				buffer = ""
-				bufferCount = 0
-				// console.log("Current allBreakdown length: ", allBreakdowns.length)
+					buffer = ""
+					bufferCount = 0
+				}
 			}
 		}
-	}
 
-	// if (buffer.endsWith("\n")){
-	// 	buffer = buffer.slice(0, -1)
-	// }
-	// console.log("Buffer count after", bufferCount)
-	// console.log(buffer.split("\n"))
-	if (bufferCount > 0){
-		if (buffer.endsWith("\n")){
-			buffer = buffer.slice(0, -1)
+		if (bufferCount > 0){
+			if (buffer.endsWith("\n")){
+				buffer = buffer.slice(0, -1)
+			}
+			const result = await getBreakDown(buffer)
+			let content = await result.content
+			content = removeMd(content.replace(/\n\s+/g, "")).replace("`", "")
+			content = JSON.parse(content)
+
+			for (let j = 0; j < bufferCount; j++){
+				allBreakdowns.value.push(content[j])
+			}
 		}
-		const result = await getBreakDown(buffer)
-		let content = await result.content
-		content = removeMd(content.replace(/\n\s+/g, "")).replace("`", "")
-		content = JSON.parse(content)
 
-		for (let j = 0; j < bufferCount; j++){
-			allBreakdowns.value.push(content[j])
-		}
+		console.log("all breakdowns: ", allBreakdowns.value)
+		*/
+
+		// store breakdowns in to the database to prevent repeated future model queries
+		const addBreakdownResult = await fetch("/api/addBreakdown", {
+			method: "POST",
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ allBreakdowns: allBreakdowns.value, musicId: embeddingResponseData.externalId })
+		})
+		const addBreakdownResultData = await addBreakdownResult.json()
+		console.log(addBreakdownResultData)
+	}catch (error) {
+		console.error("Error fetching breakdown: \n", error)
 	}
-
-	console.log("all breakdowns: ", allBreakdowns.value)
 }
 
 interface IFrameAPIType {

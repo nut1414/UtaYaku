@@ -7,7 +7,7 @@ export default defineNuxtConfig({
 		database: {
 			breakdowns: { // database name
 				connector: "sqlite",
-				options: { name: "breakdown" } // name of the database file
+				options: { name: "breakdowns" } // name of the database file
 			},
 		}
 	},
