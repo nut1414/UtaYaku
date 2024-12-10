@@ -3,7 +3,13 @@ export default defineNuxtConfig({
 	nitro:{
 		experimental: {
 			database: true	
-		}	
+		},
+		database: {
+			breakdowns: { // database name
+				connector: "sqlite",
+				options: { name: "breakdown" } // name of the database file
+			},
+		}
 	},
 
 	compatibilityDate: '2024-04-03',
