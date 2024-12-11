@@ -5,13 +5,7 @@ Currenlty built for the intention of learning Japanese. After the entire framewo
 
 The lyric breakdown works through OpenAI api calls, currently, I'm only using my own key for development. I'm still thinking about how I'll pay if I deploy it once ready. I really wish to deploy it. Bur for now I'm adding a database to store already broken down lyrics for each unique song so that a call to the API won't be needed if visiting already broken down songs.
 
-This are some previews of the current state (a tiny bug at the end):
-
-Demo1
-
-https://github.com/user-attachments/assets/a48ec857-c33b-4aab-9209-cf9bf633cf10
-
-Demo2
+This is a preview of the current state (if you find dancing pointer annoying I'm deeply sorry create a GitHub issue for that 😂 jk, i'll rerecord one if needed):
 
 https://github.com/user-attachments/assets/c60ca84c-a41d-41bc-85d1-cd86219e9a41
 
