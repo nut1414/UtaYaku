@@ -8,9 +8,11 @@ The lyric breakdown works through OpenAI api calls, currently, I'm only using my
 This are some previews of the current state (a tiny bug at the end):
 
 Demo1
+
 https://github.com/user-attachments/assets/a48ec857-c33b-4aab-9209-cf9bf633cf10
 
 Demo2
+
 https://github.com/user-attachments/assets/c60ca84c-a41d-41bc-85d1-cd86219e9a41
 
 
