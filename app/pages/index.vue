@@ -4,13 +4,15 @@
 			<div class="flex gap-3 items-baseline border-white border-b"> <h1 class="text-5xl text-yellow-100">{{song_name}}</h1>
 				<h1 class="text-xl text-orange-200">({{artist_name}})</h1>
 			</div>
-			<div class="w-full border-[#4d4e51] border-2 p-4 rounded-xl">
-				<h1 v-for="(key, i) in phrases" :key="i">
-					{{ key }}: {{ breakdown[key] }}
-				</h1>
-				<h1>
-					<span class="text-orange-200">Translation</span>: {{ translation }}
-				</h1>
+			<div class="w-full h-[600px] overflow-y-auto border-[#4d4e51] border-2 rounded-xl">
+				<div class="w-full p-4">
+					<h1 v-for="(key, i) in phrases" :key="i">
+						{{ key }}: {{ breakdown[key] }}
+					</h1>
+					<h1>
+						<span class="text-orange-200">Translation</span>: {{ translation }}
+					</h1>
+				</div>
 			</div>
 			<div class="flex flex-col text-[#F5F5F5bb] text-2xl overflow-y-auto gap-3 w-full p-4">
 				<p
@@ -45,13 +47,13 @@ const allBreakdowns = ref([])
 
 const { getBreakDown } = useBreakDown()
 
-const song_name = "Insomnia"
-const artist_name = "Eve"
+const song_name = "踊り子"
+const artist_name = "Vaundy"
 
 function timestampToMS(timestamp: string){
 	const [minutes, seconds, milliseconds] = timestamp.slice(1, -1).split(/[:.]/).map(Number)
 	const ans = (minutes! * 60 * 1000) + (seconds! * 1000) + milliseconds! * 10
-	return ans - 500
+	return ans
 }
 
 const filterTimestamps = (rawSynced: Array<string>) => {
@@ -242,7 +244,6 @@ const handleLineClick = (i: number) => {
 	const newTime = timestamps.value[i][0]
 	playbackTime.value = newTime
 
-	console.log(`Getting the breakdown of index ${i}`)
 	const cur = allBreakdowns.value[i]
 	breakdown.value = cur
 	phrases.value = Object.keys(cur).filter(key => key !== "translation")
@@ -262,6 +263,11 @@ const isCurLyric = (i: number) => {
 			block: 'center',
 			inline: 'center'
 		})
+
+		const cur = allBreakdowns.value[i]
+		breakdown.value = cur
+		phrases.value = Object.keys(cur).filter(key => key !== "translation")
+		translation.value = cur["translation"]
 
 		return true
 	} else {
