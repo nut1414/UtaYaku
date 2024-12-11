@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-	const { allBreakdowns, musicId } = await readBody(event)
+	const { musicId } = await readBody(event)
 
 	console.log(musicId)
 
@@ -19,26 +19,22 @@ export default defineEventHandler(async (event) => {
 			FOREIGN KEY (song_id) REFERENCES Song(song_id)
 		)`
 
-		await db.sql`
-			INSERT INTO Song (song_id)
-			VALUES (${musicId})
+		const exists = await db.sql`
+			SELECT COUNT(*)
+			FROM Song
+			WHERE song_id = ${musicId}
 		`
 
-		for (const breakdown of allBreakdowns) {
-			await db.sql`
-				INSERT INTO Breakdowns (song_id, json_data)
-				VALUES (${musicId}, ${JSON.stringify(breakdown)})
-			`
+		const count = exists.rows![0]["COUNT(*)"]
+		if (count === 1){
+			return { result: true }
+		} else {
+			return { result: false }
 		}
 
-		const breakdowns = await db.sql`
-			SELECT *
-			FROM Breakdowns
-		`
-
-		return { message: "Breakdowns added successfully" }
 	} catch (error) {
 		console.error(error)
 		return { message: "Add breakdown operation failed" }
 	}
 })
+

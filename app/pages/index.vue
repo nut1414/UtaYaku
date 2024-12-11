@@ -41,7 +41,7 @@ const playbackTime = ref(0)
 const breakdown = ref({})
 const phrases = ref([])
 const translation = ref("")
-const allBreakdowns = ref([{"abc": "cde", "translation": "abc"}, {"ddd": "ddd", "translation": "ppp"}])
+const allBreakdowns = ref([])
 
 const { getBreakDown } = useBreakDown()
 
@@ -115,63 +115,85 @@ const fetchMusicData = async () => {
 			console.error("Unknown error: ", error)
 		}
 	}
-	
+
 	try {
-		/*
-		const batchSize = 22
-		let buffer = ""
-		let bufferCount = 0
-		for (let i = 0; i < l; i++){
-			if (rawLyrics[i] !== ""){
-				buffer += rawLyrics[i] + "\n"
-				bufferCount++
-				if (bufferCount === batchSize){
-					if (buffer.endsWith("\n")){
-						buffer = buffer.slice(0, -1)
-					}
-					console.log("Fetching break down batch...")
-					const result = await getBreakDown(buffer)
-					let content = await result.content
-					content = removeMd(content.replace(/\n\s+/g, "")).replace("`", "")
-					content = JSON.parse(content)
-
-					for (let j = 0; j < batchSize; j++){
-						allBreakdowns.value.push(content[j])
-					}
-
-					buffer = ""
-					bufferCount = 0
-				}
-			}
-		}
-
-		if (bufferCount > 0){
-			if (buffer.endsWith("\n")){
-				buffer = buffer.slice(0, -1)
-			}
-			const result = await getBreakDown(buffer)
-			let content = await result.content
-			content = removeMd(content.replace(/\n\s+/g, "")).replace("`", "")
-			content = JSON.parse(content)
-
-			for (let j = 0; j < bufferCount; j++){
-				allBreakdowns.value.push(content[j])
-			}
-		}
-
-		console.log("all breakdowns: ", allBreakdowns.value)
-		*/
-
-		// store breakdowns in to the database to prevent repeated future model queries
-		const addBreakdownResult = await fetch("/api/addBreakdown", {
+		const breakdownExistsResult = await fetch("/api/needBreakdown", {
 			method: "POST",
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({ allBreakdowns: allBreakdowns.value, musicId: embeddingResponseData.externalId })
+			body: JSON.stringify({ musicId: embeddingResponseData.externalId })
 		})
-		const addBreakdownResultData = await addBreakdownResult.json()
-		console.log(addBreakdownResultData)
+		const breakdownExistsData = await breakdownExistsResult.json()
+		const breakdownExists = breakdownExistsData.result
+
+		if (!breakdownExists) {
+			console.log("Breakdown doesn't exist, fetching from OpenAI")
+
+			const batchSize = 22
+			let buffer = ""
+			let bufferCount = 0
+			for (let i = 0; i < l; i++){
+				if (rawLyrics[i] !== ""){
+					buffer += rawLyrics[i] + "\n"
+					bufferCount++
+					if (bufferCount === batchSize){
+						if (buffer.endsWith("\n")){
+							buffer = buffer.slice(0, -1)
+						}
+						console.log("Fetching break down batch...")
+						const result = await getBreakDown(buffer)
+						let content = await result.content
+						content = removeMd(content.replace(/\n\s+/g, "")).replace("`", "")
+						content = JSON.parse(content)
+
+						for (let j = 0; j < batchSize; j++){
+							allBreakdowns.value.push(content[j])
+						}
+
+						buffer = ""
+						bufferCount = 0
+					}
+				}
+			}
+
+			if (bufferCount > 0){
+				if (buffer.endsWith("\n")){
+					buffer = buffer.slice(0, -1)
+				}
+				const result = await getBreakDown(buffer)
+				let content = await result.content
+				content = removeMd(content.replace(/\n\s+/g, "")).replace("`", "")
+				content = JSON.parse(content)
+
+				for (let j = 0; j < bufferCount; j++){
+					allBreakdowns.value.push(content[j])
+				}
+			}
+
+			// store breakdowns in to the database to prevent repeated future model queries
+			const addBreakdownResult = await fetch("/api/addBreakdown", {
+				method: "POST",
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ allBreakdowns: allBreakdowns.value, musicId: embeddingResponseData.externalId })
+			})
+			const addBreakdownResultData = await addBreakdownResult.json()
+			console.log(addBreakdownResultData.message)
+		} else {
+			console.log("Breakdowns already exists, fetching from database...")
+			const fetchedBreakdownResult = await fetch("/api/getBreakdown", {
+				method: "POST",
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ musicId: embeddingResponseData.externalId })
+			})
+			const fetchedBreakdownData = await fetchedBreakdownResult.json()
+			console.log(fetchedBreakdownData.breakdowns)
+			allBreakdowns.value = fetchedBreakdownData.breakdowns
+		}
 	}catch (error) {
 		console.error("Error fetching breakdown: \n", error)
 	}
@@ -186,11 +208,11 @@ interface IFrameAPIType {
 }
 
 interface EmbedControllerType {
-    addListener: (event: string, callback: (state: PlaybackState) => void) => void;
+	addListener: (event: string, callback: (state: PlaybackState) => void) => void;
 }
 
 interface PlaybackState {
-    data: { position: number };
+	data: { position: number };
 }
 
 let embedController: EmbedControllerType | null = null
@@ -240,7 +262,7 @@ const isCurLyric = (i: number) => {
 			block: 'center',
 			inline: 'center'
 		})
-		
+
 		return true
 	} else {
 		return false
