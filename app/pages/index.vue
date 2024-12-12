@@ -47,12 +47,17 @@ const allBreakdowns = ref([])
 
 const { getBreakDown } = useBreakDown()
 
-const song_name = "踊り子"
-const artist_name = "Vaundy"
+const song_name = "死ぬのがいいわ"
+const artist_name = "藤井風"
 
 function timestampToMS(timestamp: string){
 	const [minutes, seconds, milliseconds] = timestamp.slice(1, -1).split(/[:.]/).map(Number)
-	const ans = (minutes! * 60 * 1000) + (seconds! * 1000) + milliseconds! * 10
+	let ans
+	if (milliseconds! >= 50){
+		ans = (minutes! * 60) + seconds!
+	} else {
+		ans = (minutes! * 60) + seconds!
+	}
 	return ans
 }
 
@@ -93,7 +98,9 @@ const fetchMusicData = async () => {
 	const most_related = lyricsData[0]
 	const rawLyrics = most_related.plainLyrics.split("\n")
 	const rawSynced = most_related.syncedLyrics.split("\n").slice(0, -1)
+	console.log("rawSynced: ", rawSynced)
 	timestamps.value = filterTimestamps(rawSynced)
+	console.log("timestamps: ", timestamps.value)
 	const l = rawLyrics.length
 	let indices = new Array<number>
 	let j = 0
@@ -241,23 +248,30 @@ const initializeSpotifyEmbed = (trackUrl: string) => {
 }
 
 const handleLineClick = (i: number) => {
-	const newTime = timestamps.value[i][0]
-	playbackTime.value = newTime
-
 	const cur = allBreakdowns.value[i]
-	breakdown.value = cur
-	phrases.value = Object.keys(cur).filter(key => key !== "translation")
-	translation.value = cur["translation"]
+	console.log(cur)
+	if (cur !== null){
+		breakdown.value = cur
+		phrases.value = Object.keys(cur).filter(key => key !== "translation")
+		translation.value = cur["translation"]
+	} else {
+		breakdown.value = {"Special message": "No breakdown found for this line"}
+		phrases.value = ["Special message"]
+		translation.value = "No translation found"
+	}
 
+	const newTime = timestamps.value[i][0]
 	if (embedController) {
-		embedController.seek((newTime + 500) / 1000)
+		console.log(`Controller set to ${newTime}`)
+		embedController.seek(newTime)
 	} else {
 		console.error("Embed Controller not initialized")
 	}
 }
 
 const isCurLyric = (i: number) => {
-	if (i !== -1 && playbackTime.value >= timestamps.value[i][0] && playbackTime.value < timestamps.value[i][1]){
+	const playbackInSeconds = Math.floor(playbackTime.value / 1000)
+	if (i !== -1 && timestamps.value[i][0] <= playbackInSeconds && playbackInSeconds < timestamps.value[i][1]){
 		document.getElementById(`${i}`)!.scrollIntoView({
 			behavior: 'smooth',
 			block: 'center',
@@ -265,9 +279,15 @@ const isCurLyric = (i: number) => {
 		})
 
 		const cur = allBreakdowns.value[i]
-		breakdown.value = cur
-		phrases.value = Object.keys(cur).filter(key => key !== "translation")
-		translation.value = cur["translation"]
+		if (cur !== null){
+			breakdown.value = cur
+			phrases.value = Object.keys(cur).filter(key => key !== "translation")
+			translation.value = cur["translation"]
+		} else {
+			breakdown.value = {"Special message": "No breakdown found for this line"}
+			phrases.value = ["Special message"]
+			translation.value = "No translation found"
+		}
 
 		return true
 	} else {
