@@ -7,7 +7,7 @@ The lyric breakdown works through OpenAI api calls, currently, I'm only using my
 
 This is a preview of the current state (if you find dancing pointer annoying I'm deeply sorry create a GitHub issue for that 😂 jk, i'll rerecord one if needed):
 
-https://github.com/user-attachments/assets/c60ca84c-a41d-41bc-85d1-cd86219e9a41
+https://github.com/user-attachments/assets/da57c91f-9ddb-465b-b28f-708592d18f13
 
 
 
