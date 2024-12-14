@@ -149,6 +149,9 @@ const fetchMusicData = async () => {
 
 		if (!breakdownExists) {
 			console.log("Breakdown doesn't exist, fetching from OpenAI")
+			breakdown.value = {"Special message": "This song is new in the system, generating breakdown."}
+			phrases.value = ["Special message"]
+			translation.value = "New song detected, generating breakdown."
 
 			const batchSize = 22
 			let buffer = ""
@@ -201,6 +204,11 @@ const fetchMusicData = async () => {
 			})
 			const addBreakdownResultData = await addBreakdownResult.json()
 			console.log(addBreakdownResultData.message)
+
+			const breakdown = ref({"Special message": "Generation complete. Click on a lyric to view breakdown."})
+			const phrases = ref(["Special message"])
+			const translation = ref("Generation complete. Click on a lyric to show translation.")
+
 		} else {
 			console.log("Breakdowns already exists, fetching from database...")
 			const fetchedBreakdownResult = await fetch("/api/getBreakdown", {
@@ -285,43 +293,34 @@ const handleLineClick = (i: number) => {
 }
 
 const isCurLyric = (i: number) => {
-	const playbackInSeconds = Math.floor(playbackTime.value / 1000)
-	if (i !== -1 && timestamps.value[i][0] <= playbackInSeconds && playbackInSeconds < timestamps.value[i][1]){
-		document.getElementById(`${i}`)!.scrollIntoView({
-			behavior: 'smooth',
-			block: 'center',
-			inline: 'center'
-		})
+		const playbackInSeconds = Math.floor(playbackTime.value / 1000)
+    return i !== -1 && timestamps.value[i][0] <= playbackInSeconds && playbackInSeconds < timestamps.value[i][1]
+}
 
-		const cur = allBreakdowns.value[i]
-		if (cur !== null){
+watch(playbackTime, (newPlaybackTime:number , oldPlaybackTime: number) => {
+	const playbackInSeconds = Math.floor(newPlaybackTime / 1000)
+	const currentIndex = timestamps.value.findIndex(
+		([start, end]: [number, number]) => start <= playbackInSeconds && playbackInSeconds < end
+	)
+
+	if (currentIndex !== -1) {
+		const cur = allBreakdowns.value[currentIndex]
+		if (cur) {
 			breakdown.value = cur
-			phrases.value = Object.keys(cur).filter(key => key !== "translation")
+			phrases.value = Object.keys(cur).filter((key) => key !== "translation")
 			translation.value = cur["translation"]
 		} else {
-			breakdown.value = {"Special message": "No breakdown found for this line"}
+			breakdown.value = { "Special message": "No breakdown found for this line" }
 			phrases.value = ["Special message"]
 			translation.value = "No translation found"
 		}
 
-		return true
-	} else {
-		return false
+		document.getElementById(`${currentIndex}`)!.scrollIntoView({ behavior: "smooth", block: "center" })
 	}
-}
-
-const test = async (message: string) => {
-	const result = await getBreakDown(message)
-	let content = await result.content
-	content = content.replace(/\n\s+/g, "")
-	content = JSON.parse(content)
-	breakdown.value = content
-	phrases.value = Object.keys(content).filter(key => key !== "translation")
-}
+})
 
 onMounted(() => {
 	fetchMusicData()
 })
 </script>
-
 
