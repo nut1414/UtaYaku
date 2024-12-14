@@ -205,9 +205,9 @@ const fetchMusicData = async () => {
 			const addBreakdownResultData = await addBreakdownResult.json()
 			console.log(addBreakdownResultData.message)
 
-			const breakdown = ref({"Special message": "Generation complete. Click on a lyric to view breakdown."})
-			const phrases = ref(["Special message"])
-			const translation = ref("Generation complete. Click on a lyric to show translation.")
+			breakdown.value = {"Special message": "Generation complete. Click on a lyric to view breakdown."}
+			phrases.value = ["Special message"]
+			translation.value = "Generation complete. Click on a lyric to show translation."
 
 		} else {
 			console.log("Breakdowns already exists, fetching from database...")
