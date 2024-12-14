@@ -4,17 +4,15 @@
 			<div class="flex gap-3 items-baseline border-white border-b"> <h1 class="text-5xl text-yellow-100">{{song_name}}</h1>
 				<h1 class="text-xl text-orange-200">({{artist_name}})</h1>
 			</div>
-			<div class="w-full h-[600px] overflow-y-auto border-[#4d4e51] border-2 rounded-xl">
-				<div class="w-full p-4">
-					<h1 v-for="(key, i) in phrases" :key="i">
-						{{ key }}: {{ breakdown[key] }}
-					</h1>
-					<h1>
-						<span class="text-orange-200">Translation</span>: {{ translation }}
-					</h1>
-				</div>
+			<div class="w-full h-[600px] p-4 overflow-y-auto border-[#4d4e51] border-2 rounded-xl">
+				<h1 v-for="(key, i) in phrases" :key="i">
+					{{ key }}: {{ breakdown[key] }}
+				</h1>
+				<h1>
+					<span class="text-orange-200">Translation</span>: {{ translation }}
+				</h1>
 			</div>
-			<div class="flex flex-col text-[#F5F5F5bb] text-2xl overflow-y-auto gap-3 w-full p-4">
+			<div v-if="fetchedLyrics" class="flex flex-col text-[#F5F5F5bb] text-2xl overflow-y-auto gap-3 w-full p-4">
 				<p
 					v-for="(lyric_line, i) in lyrics"
 					class="cursor-pointer"
@@ -26,8 +24,18 @@
 					{{ lyric_line }}
 				</p>
 			</div>
-			<div class="w-full">
+			<div v-else>
+				<div class="flex items-center gap-3">
+					<Shuriken size="25px" />
+					<h1 class="text-white">Fetching lyrics</h1>
+				</div>
+			</div>
+			<div class="w-full" :class="embedReady ? '' : 'invisible'">
 				<div id="embed-iframe"></div>
+			</div>
+			<div class="flex items-center gap-3" :class="embedReady ? 'hidden' : ''">
+				<Shuriken size="25px" />
+				<h1 class="text-white">Fetching lyrics</h1>
 			</div>
 		</div>
 	</div>
@@ -45,10 +53,14 @@ const phrases = ref([])
 const translation = ref("")
 const allBreakdowns = ref([])
 
+const fetchedLyrics = ref(false)
+const fetchedBreakdowns = ref(false)
+const embedReady = ref(false)
+
 const { getBreakDown } = useBreakDown()
 
-const song_name = "死ぬのがいいわ"
-const artist_name = "藤井風"
+const song_name = "Insomnia"
+const artist_name = "Eve"
 
 function timestampToMS(timestamp: string){
 	const [minutes, seconds, milliseconds] = timestamp.slice(1, -1).split(/[:.]/).map(Number)
@@ -98,9 +110,7 @@ const fetchMusicData = async () => {
 	const most_related = lyricsData[0]
 	const rawLyrics = most_related.plainLyrics.split("\n")
 	const rawSynced = most_related.syncedLyrics.split("\n").slice(0, -1)
-	console.log("rawSynced: ", rawSynced)
 	timestamps.value = filterTimestamps(rawSynced)
-	console.log("timestamps: ", timestamps.value)
 	const l = rawLyrics.length
 	let indices = new Array<number>
 	let j = 0
@@ -114,6 +124,7 @@ const fetchMusicData = async () => {
 	}
 	lyrics.value = rawLyrics
 	lyricsIndices.value = indices
+	fetchedLyrics.value = true
 
 	try {
 		initializeSpotifyEmbed(trackUrl)
@@ -242,6 +253,10 @@ const initializeSpotifyEmbed = (trackUrl: string) => {
 			EmbedController.addListener("playback_update", (state) => {
 				playbackTime.value = state.data.position
 			})
+			EmbedController.addListener('ready', () => {
+				console.log("embedder ready")
+				embedReady.value = true
+			});
 		}
 		IframeAPI.createController(element, options, callback)
 	}

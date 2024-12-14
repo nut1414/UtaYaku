@@ -22,20 +22,20 @@ export default defineEventHandler(async (event) => {
 		let searchData = await searchResponse.json()
 		searchData = searchData.tracks[0].data
 		
-		const track = await fetch("https://api.musicapi.com/public/embed/url", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"Accept": "application/json",
-				"Authorization": `Token ${process.env.CLIENT_ID}`
-			},
-			body: JSON.stringify({
-				url: searchData.url
-			})
-		})
-
-		const trackData = await track.json()
-		console.log(trackData)
+		// const track = await fetch("https://api.musicapi.com/public/embed/url", {
+		// 	method: "POST",
+		// 	headers: {
+		// 		"Content-Type": "application/json",
+		// 		"Accept": "application/json",
+		// 		"Authorization": `Token ${process.env.CLIENT_ID}`
+		// 	},
+		// 	body: JSON.stringify({
+		// 		url: searchData.url
+		// 	})
+		// })
+		//
+		// const trackData = await track.json()
+		// console.log(trackData)
 
 		return searchData
 	} catch (error) {
