@@ -48,9 +48,9 @@ const lyrics = ref([])
 const lyricsIndices = ref([])
 const timestamps = ref([]) // in pairs format [start, end]
 const playbackTime = ref(0)
-const breakdown = ref({})
-const phrases = ref([])
-const translation = ref("")
+const breakdown = ref({"Special message": "Click on a lyric to show breakdown!"})
+const phrases = ref(["Special message"])
+const translation = ref("Click on a lyric to show translation!")
 const allBreakdowns = ref([])
 
 const fetchedLyrics = ref(false)
