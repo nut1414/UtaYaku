@@ -52,6 +52,7 @@ const fetchingMetaData = ref(false)
 const noTracksFound = ref(false)
 
 const getMetaData = async () => {
+	trackCandidates.value = []
 	fetchingMetaData.value = true
 	const lyricsResponse = await fetch(`https://lrclib.net/api/search?track_name=${song_name.value}&artist_name=${artist_name.value}`)
 	const lyricsResponseData = await lyricsResponse.json()
