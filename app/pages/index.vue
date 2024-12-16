@@ -11,7 +11,7 @@
 					<input v-model="artist_name" class="rounded-lg p-2 text-black" type="text" placeholder="Artist name" />
 				</div>
 				<div class="flex flex-col gap-1">
-					<label class="invisible">placeholder</label>
+					<label class="invisible">Easter egg!</label>
 					<button class="h-full rounded-lg hover:cursor-pointer hover:bg-gray-900 border-2" @click="getMetaData">Search</button>
 				</div>
 			</div>
