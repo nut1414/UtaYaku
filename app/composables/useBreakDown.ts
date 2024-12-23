@@ -9,17 +9,16 @@ export function useBreakDown() {
   const baseHistory = [
     {
       role: "system",
-      content: `You are an intelligent and helpful AI language assistant, designed to break down and explain concepts in Japanese. When given multiple lines of Japanese lyrics (one line terminated with '\\n'), respond by breaking down phrase in the line into a JSON array. Each element of the array should represent one line and include a key-value pair for each vocabulary item in that line only. Ensure that:
+      content: `You are an intelligent and helpful AI language assistant, designed to break down and explain concepts in Japanese. When given multiple lines of Japanese lyrics (in JSON Array), respond by breaking down phrase in the line into another JSON array. Each element of the array should represent one line and include a key-value pair for each vocabulary item in that line only. Ensure that:
 				1. Only the JSON array is returned. No useless words such as "Here's a breakdown or your input...". No markdown as well please. Just the array. Or else the frontend parsing it will crash.
 				2. Each key represents a unique vocabulary item in the input.
 				3. The value is the definition, including its hiragana and meaning.
 				4. The final key in each object is 'translation', providing an English translation of the line.
 				5. Avoid repeating the same key within an object, even if the word appears multiple times.
 				6. Break down each line separately and create a new object for each.
-        7. Do not attempt to combine multiple lines into a single object even if its a part of the same sentence. for example: '貴方も私も秘密の花を\\n咲かせて笑う怪物だね' should be broken down into two objects, one for each line.
-        8. '\\n' will be used to indicate a new line in the input. YOU WILL ALWAYS START A NEW OBJECT AFTER A '\\n' IN THE INPUT. NO EXCEPTIONS. Failure to do so, will cause desync in the frontend and the breakdown will be incorrect.
-        9. If the sentence in that line is a part of a larger sentence, you can ignore the larger sentence and just focus on the line itself.
-        `,
+        7. Do not attempt to combine multiple lines into a single object even if its a part of the same sentence. For example, '["貴方も私も秘密の花を", "咲かせて笑う怪物だね"]' should be broken down into two objects, one for each line.
+        8. You are allow to look ahead to the next line to provide a better breakdown of the current line. For example, if the next line is "咲かせて笑う怪物だね", you can use that information to provide a better breakdown for "貴方も私も秘密の花を". However, you should not combine the two lines into a single object.
+        9. If the sentence in that line is a part of a larger sentence, you can ignore the larger sentence and just focus on the line itself.`,
     },
     {
       role: "assistant",
@@ -28,8 +27,7 @@ export function useBreakDown() {
     },
     {
       role: "user",
-      content: `荒んで 荒んで 予測不可能な回答\\n曜日すら分かってない 今日を生きぬくことで痛いくらい\\n第二ボタンをはずしながら言う\\n「最後だからいいよ」 って\\n卒業の日の教室はどこか\\n寂し気な顔をしている\\n返事はいらないからさ\\n二人のストーリー\\nあげちゃおうよ\\n振り返る通いなれた道も\\n懐かしくなってしまうんだろう\\n春に置いて行く\\n恋焦がれた日々\\n貴方も私も秘密の花を\\n咲かせて笑う怪物だね\\nくすぐりあって転げ合って\\nなんて夢はもう終わりにしよう"
-			`,
+      content: `["荒んで 荒んで 予測不可能な回答","曜日すら分かってない 今日を生きぬくことで痛いくらい","第二ボタンをはずしながら言う","「最後だからいいよ」 って","卒業の日の教室はどこか","寂し気な顔をしている","返事はいらないからさ","二人のストーリー","あげちゃおうよ","振り返る通いなれた道も","懐かしくなってしまうんだろう","春に置いて行く","恋焦がれた日々","貴方も私も秘密の花を","咲かせて笑う怪物だね","くすぐりあって転げ合って","なんて夢はもう終わりにしよう"]`,
     },
     {
       role: "assistant",
@@ -162,7 +160,7 @@ export function useBreakDown() {
       ...baseHistory,
       {
         role: "user",
-        content: message.replace(/\n/g, "\\n"),
+        content: JSON.stringify(message.split("\n")),
       },
     ];
 
