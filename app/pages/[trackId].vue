@@ -23,7 +23,7 @@
         </div>
         <div
           v-if="fetchedLyrics"
-          class="flex flex-col text-[#F5F5F5bb] text-2xl overflow-y-scroll gap-3 w-screen md:w-1/2 p-4 overflow-scroll h-[15vh] md:h-auto pt-[45vh]"
+          class="flex flex-col text-[#F5F5F5bb] text-2xl overflow-y-scroll gap-3 w-screen md:w-1/2 p-4 overflow-scroll h-[15vh] md:h-auto"
         >
           <p
             v-for="(lyric_line, i) in lyrics"
@@ -177,7 +177,7 @@ const fetchMusicData = async () => {
       body: JSON.stringify({ musicId: embeddingResponseData.externalId }),
     });
     const breakdownExistsData = await breakdownExistsResult.json();
-    const breakdownExists = false ?? breakdownExistsData.result;
+    const breakdownExists = breakdownExistsData.result;
 
     if (!breakdownExists) {
       console.log("Breakdown doesn't exist, fetching from OpenAI");
