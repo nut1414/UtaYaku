@@ -121,7 +121,7 @@ const fetchMusicData = async () => {
     `https://lrclib.net/api/search?track_name=${song_name}&artist_name=${artist_name}`
   );
 
-  if (!lyricsResponse.ok) {
+  if (!lyricsResponse.ok || lyricsResponse.status === 204) {
     lyrics.value = [
       `No song with name ${song_name} and artist ${artist_name} could be found.`,
     ];
@@ -177,7 +177,7 @@ const fetchMusicData = async () => {
       body: JSON.stringify({ musicId: embeddingResponseData.externalId }),
     });
     const breakdownExistsData = await breakdownExistsResult.json();
-    const breakdownExists = breakdownExistsData.result;
+    const breakdownExists = false ?? breakdownExistsData.result;
 
     if (!breakdownExists) {
       console.log("Breakdown doesn't exist, fetching from OpenAI");
@@ -212,7 +212,7 @@ const fetchMusicData = async () => {
       for (let i = 0; i < lyricLength; i++) {
         translation.value = `Starting... ${i}/${lyricLength}`;
         if (rawLyrics[i] !== "") {
-          buffer += rawLyrics[i] + "\\n";
+          buffer += rawLyrics[i] + "\n";
           bufferCount++;
           translation.value = `Breakdown generation in progress: ${i}/${lyricLength}`;
           if (bufferCount == batchSize) {
