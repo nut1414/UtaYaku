@@ -9,7 +9,7 @@
       </div>
       <div class="flex flex-wrap md:flex-nowrap h-[75vh] md:h-[60vh]">
         <div
-          class="md:w-1/2 w-screen h-[35vh] md:h-auto max-h-[600px] p-4 overflow-y-auto border-[#4d4e51] border-2 rounded-xl flex justify-center items-center align-middle"
+          class="md:w-1/2 w-screen h-[35vh] md:h-auto max-h-[600px] p-4 overflow-y-auto rounded-xl flex justify-center items-center align-middle"
         >
           <div class="w-full">
             <h1 v-for="(key, i) in phrases" :key="i">
@@ -23,7 +23,7 @@
         </div>
         <div
           v-if="fetchedLyrics"
-          class="flex flex-col text-[#F5F5F5bb] text-2xl overflow-y-scroll gap-3 md:w-1/2 p-4 overflow-scroll h-[15vh] md:h-auto pt-[45vh]"
+          class="flex flex-col text-[#F5F5F5bb] text-2xl overflow-y-scroll gap-3 w-screen md:w-1/2 p-4 overflow-scroll h-[15vh] md:h-auto pt-[45vh]"
         >
           <p
             v-for="(lyric_line, i) in lyrics"
