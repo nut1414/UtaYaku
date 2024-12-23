@@ -1,15 +1,15 @@
 <template>
   <div class="flex items-center flex-col justify-center h-full w-full gap-5">
     <div
-      class="max-w-4xl flex items-center flex-col justify-center h-full w-full gap-5 py-[4rem]"
+      class="max-w-4xl flex items-center flex-col justify-center h-full w-full gap-5 md:py-[4rem]"
     >
       <div class="flex gap-3 items-baseline border-white border-b">
-        <h1 class="text-5xl text-yellow-100">{{ song_name }}</h1>
-        <h1 class="text-xl text-orange-200">({{ artist_name }})</h1>
+        <h1 class="md:text-5xl text-yellow-100">{{ song_name }}</h1>
+        <h1 class="md:text-xl text-orange-200">({{ artist_name }})</h1>
       </div>
-      <div class="flex h-full">
+      <div class="flex flex-wrap md:flex-nowrap h-[75vh] md:h-[60vh]">
         <div
-          class="w-full max-h-[600px] p-4 overflow-y-auto border-[#4d4e51] border-2 rounded-xl flex justify-center items-center align-middle"
+          class="md:w-1/2 w-screen h-[35vh] md:h-auto max-h-[600px] p-4 overflow-y-auto border-[#4d4e51] border-2 rounded-xl flex justify-center items-center align-middle"
         >
           <div class="w-full">
             <h1 v-for="(key, i) in phrases" :key="i">
@@ -23,7 +23,7 @@
         </div>
         <div
           v-if="fetchedLyrics"
-          class="flex flex-col max-h-[600px] text-[#F5F5F5bb] text-2xl overflow-y-auto gap-3 w-full p-4 overflow-scroll"
+          class="flex flex-col text-[#F5F5F5bb] text-2xl overflow-y-scroll gap-3 md:w-1/2 p-4 overflow-scroll h-[35vh] md:h-auto pt-[50vh]"
         >
           <p
             v-for="(lyric_line, i) in lyrics"
@@ -38,19 +38,20 @@
           >
             {{ lyric_line }}
           </p>
+          <p class="pt-[50vh]"></p>
         </div>
         <div v-else>
-          <div class="flex items-center gap-3 max-h-[600px]">
+          <div class="flex items-center gap-3 h-[20vh]">
             <Shuriken size="25px" />
             <h1 class="text-white">Fetching lyrics</h1>
           </div>
         </div>
       </div>
-      <div class="w-full" :class="embedReady ? '' : 'invisible'">
+      <div class="w-full h-[20vh]" :class="embedReady ? '' : 'invisible'">
         <div id="embed-iframe"></div>
       </div>
       <div
-        class="flex items-center gap-3 h-fit"
+        class="flex items-center gap-3 h-[20vh]"
         :class="embedReady ? 'hidden' : ''"
       >
         <Shuriken size="25px" />
