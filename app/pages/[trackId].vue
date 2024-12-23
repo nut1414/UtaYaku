@@ -23,7 +23,7 @@
         </div>
         <div
           v-if="fetchedLyrics"
-          class="flex flex-col text-[#F5F5F5bb] text-2xl overflow-y-scroll gap-3 md:w-1/2 p-4 overflow-scroll h-[35vh] md:h-auto pt-[50vh]"
+          class="flex flex-col text-[#F5F5F5bb] text-2xl overflow-y-scroll gap-3 md:w-1/2 p-4 overflow-scroll h-[15vh] md:h-auto pt-[45vh]"
         >
           <p
             v-for="(lyric_line, i) in lyrics"
@@ -38,7 +38,7 @@
           >
             {{ lyric_line }}
           </p>
-          <p class="pt-[50vh]"></p>
+          <p class="pt-[45vh]"></p>
         </div>
         <div v-else>
           <div class="flex items-center gap-3 h-[20vh]">
