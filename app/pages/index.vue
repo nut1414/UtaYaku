@@ -72,7 +72,10 @@ function timestampToMS(timestamp: string) {
 }
 
 const filterTimestamps = (rawSynced: Array<string>) => {
-	const matches = rawSynced.map(line => line.match(/\[\d{2}:\d{2}\.\d{2}\]/)![0]).map(timestamp => timestampToMS(timestamp))
+	const matches = rawSynced
+    .filter((line) => line.length > 11)
+    .map((line) => line.match(/\[\d{2}:\d{2}\.\d{2}\]/)![0])
+    .map((timestamp) => timestampToMS(timestamp));
 	const l = matches.length
 	let timeStampPairs = new Array<Array<number>>
 	for (let i = 0; i < l - 1; i++){
